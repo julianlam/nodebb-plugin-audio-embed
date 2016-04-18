@@ -1,0 +1,25 @@
+{
+	"id": "nodebb-plugin-audio-embed",
+	"url": "https://github.com/julianlam/nodebb-plugin-audio-embed",
+	"library": "./library.js",
+	"hooks": [
+		{ "hook": "static:app.load", "method": "init" },
+		{ "hook": "filter:admin.header.build", "method": "addAdminNavigation" },
+		{ "hook": "filter:composer.formatting", "method": "registerFormatting" },
+		{ "hook": "filter:parse.post", "method": "parsePost" },
+		{ "hook": "filter:parse.raw", "method": "parseRaw" }
+	],
+	"staticDirs": {
+		"static": "./static"
+	},
+	"less": [
+		"static/style.less"
+	],
+	"scripts": [
+		"static/lib/main.js"
+	],
+	"acpScripts": [
+		"static/lib/admin.js"
+	],
+	"templates": "static/templates"
+}

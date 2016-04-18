@@ -1,0 +1,31 @@
+{
+  "name": "nodebb-plugin-audio-embed",
+  "version": "1.0.0",
+  "description": "",
+  "main": "library.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/julianlam/nodebb-plugin-audio-embed"
+  },
+  "keywords": [
+    "nodebb",
+    "plugin"
+  ],
+  "author": {
+    "name": "Julian Lam",
+    "email": "julian@nodebb.org"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/julianlam/nodebb-plugin-audio-embed/issues"
+  },
+  "readmeFilename": "README.md",
+  "nbbpm": {
+    "compatibility": "^1.0.0"
+  },
+  "dependencies": {
+    "async": "^2.0.0-rc.3",
+    "mkdirp": "^0.5.1",
+    "mv": "^2.1.1"
+  }
+}
