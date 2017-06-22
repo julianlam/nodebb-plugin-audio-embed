@@ -29,7 +29,7 @@ plugin.init = function(params, callback) {
     router.get('/api/admin/plugins/audio-embed', controllers.renderAdminPage);
     router.post('/plugins/nodebb-plugin-audio-embed/upload', multiparty, hostMiddleware.validateFiles, hostMiddleware.applyCSRF, controllers.upload);
 
-    mkdirp(path.join(nconf.get('base_dir'), nconf.get('upload_path'), 'audio-embed'), callback);
+    mkdirp(path.join(nconf.get('upload_path'), 'audio-embed'), callback);
 };
 
 plugin.addAdminNavigation = function(header, callback) {
@@ -50,7 +50,7 @@ plugin.registerFormatting = function(payload, callback) {
 plugin.processUpload = function(payload, callback) {
     if (payload.type.startsWith('audio/')) {
         var id = path.basename(payload.path),
-            uploadPath = path.join(nconf.get('base_dir'), nconf.get('upload_path'), 'audio-embed', id);
+            uploadPath = path.join(nconf.get('upload_path'), 'audio-embed', id);
 
         async.waterfall([
             async.apply(mv, payload.path, uploadPath),
