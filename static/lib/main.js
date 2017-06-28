@@ -25,15 +25,38 @@ $(document).ready(function() {
 		});
 	});
 
+	$(window).on('action:composer.loaded', function (ev, data) {
+		if ($.Redactor) {
+			$.Redactor.opts.plugins.push('audio-embed');
+		}
+	});
+
 	$(window).on('action:redactor.load', function() {
-		$.Redactor.addButton('Embed Audio', 'fa-file-audio-o', function (redactor) {
-			upload(function (id) {
-				templates.parse('partials/audio-embed', {
-					path: config.relative_path + '/uploads/audio-embed/' + id
-				}, function (html) {
-					redactor.insert.html(html);
-				});
-			});
-		});
+		$.Redactor.prototype['audio-embed'] = function () {
+			return {
+				init: function () {
+					var self = this;
+
+					// require translator as such because it was undefined without it
+					require(['translator'], function (translator) {
+						translator.translate('Embed Audio', function (translated) {
+							var button = self.button.add('audio-embed', translated);
+							self.button.setIcon(button, '<i class="fa fa-file-audio-o"></i>');
+							self.button.addCallback(button, self['audio-embed'].onClick);
+						});
+					});
+				},
+				onClick: function () {
+					var self = this;
+					upload(function (id) {
+						templates.parse('partials/audio-embed', {
+							path: config.relative_path + '/uploads/audio-embed/' + id
+						}, function (html) {
+							self.insert.html(html);
+						});
+					});
+				}
+			};
+		};
 	});
 });
