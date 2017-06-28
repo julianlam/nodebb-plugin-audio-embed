@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-audio-embed",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "library.js",
   "repository": {
