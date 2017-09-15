@@ -6,8 +6,7 @@ var path = require('path'),
     mkdirp = require('mkdirp'),
     mv = require('mv'),
     async = require('async'),
-    nconf = require.main.require('nconf'),
-    templates = require.main.require('templates.js');
+    nconf = require.main.require('nconf');
 
 var db = module.parent.require('./database');
 
