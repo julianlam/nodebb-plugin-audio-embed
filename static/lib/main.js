@@ -12,7 +12,7 @@ $(document).ready(function() {
 		});
 	}
 
-	$(window).on('action:app.load', function() {
+	$(window).on('action:composer.loaded', function (ev, data) {
 		require(['composer/formatting', 'composer/controls'], function(formatting, controls) {
 			if (formatting && controls) {
 				formatting.addButtonDispatch('audio-embed', function(textarea, selectionStart, selectionEnd){
@@ -23,9 +23,7 @@ $(document).ready(function() {
 				});
 			}
 		});
-	});
 
-	$(window).on('action:composer.loaded', function (ev, data) {
 		if ($.Redactor) {
 			$.Redactor.opts.plugins.push('audio-embed');
 		}
