@@ -8,7 +8,7 @@ var path = require('path'),
     async = require('async'),
     nconf = require.main.require('nconf');
 
-var db = module.parent.require('./database');
+var db = require.main.require('./src/database');
 
 var controllers = require('./lib/controllers');
 
