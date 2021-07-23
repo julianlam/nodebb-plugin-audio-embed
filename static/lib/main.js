@@ -47,10 +47,12 @@ $(document).ready(function() {
 				onClick: function () {
 					var self = this;
 					upload(function (id) {
-						templates.parse('partials/audio-embed', {
-							path: config.relative_path + '/uploads/audio-embed/' + id
-						}, function (html) {
-							self.insert.html(html);
+						require(['benchpress'], (Benchpress) => {
+							Benchpress.parse('partials/audio-embed', {
+								path: config.relative_path + '/uploads/audio-embed/' + id
+							}, function (html) {
+								self.insert.html(html);
+							});
 						});
 					});
 				}
