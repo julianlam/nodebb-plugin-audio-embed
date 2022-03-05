@@ -1,7 +1,7 @@
 'use strict';
 /* globals $, app, socket, define */
 
-define('admin/plugins/audio-embed', ['settings'], function(Settings) {
+define('admin/plugins/audio-embed', ['settings', 'alerts'], function(Settings, alerts) {
 
 	var ACP = {};
 
@@ -10,7 +10,7 @@ define('admin/plugins/audio-embed', ['settings'], function(Settings) {
 
 		$('#save').on('click', function() {
 			Settings.save('audio-embed', $('.audio-embed-settings'), function() {
-				app.alert({
+				alerts.alert({
 					type: 'success',
 					alert_id: 'audio-embed-saved',
 					title: 'Settings Saved',
