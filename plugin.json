@@ -9,12 +9,6 @@
 		{ "hook": "filter:parse.post", "method": "parsePost" },
 		{ "hook": "filter:parse.raw", "method": "parseRaw" }
 	],
-	"staticDirs": {
-		"static": "./static"
-	},
-	"less": [
-		"static/style.less"
-	],
 	"scripts": [
 		"static/lib/main.js"
 	],
