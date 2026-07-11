@@ -7,6 +7,9 @@
     "type": "git",
     "url": "https://github.com/julianlam/nodebb-plugin-audio-embed"
   },
+  "scripts": {
+    "lint": "eslint ."
+  },
   "keywords": [
     "nodebb",
     "plugin"
@@ -21,11 +24,13 @@
   },
   "readmeFilename": "README.md",
   "nbbpm": {
-    "compatibility": "^3.2.0"
+    "compatibility": "^4.14.0"
   },
   "dependencies": {
-    "async": "^3.2.2",
-    "mkdirp": "^0.5.1",
-    "mv": "^2.1.1"
+    "mkdirp": "^3.0.1"
+  },
+  "devDependencies": {
+    "eslint": "10.6.0",
+    "eslint-config-nodebb": "^2.0.3"
   }
 }

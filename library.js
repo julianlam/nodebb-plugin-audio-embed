@@ -1,121 +1,90 @@
-"use strict";
-/* globals require, module */
+'use strict';
 
-var path = require('path'),
-    fs = require('fs'),
-    mkdirp = require('mkdirp'),
-    mv = require('mv'),
-    async = require('async'),
-    nconf = require.main.require('nconf');
+const path = require('path');
+const { mkdirp } = require('mkdirp');
 
-var db = require.main.require('./src/database');
+const nconf = nodebb.require('nconf');
 
-var controllers = require('./lib/controllers');
+const db = nodebb.require('./src/database');
+const routeHelpers = nodebb.require('./src/routes/helpers');
 
-var plugin = {
-        embedRegex: /\[audio\/([\w\-_.]+)\]/g
-    },
-    app;
+const controllers = require('./lib/controllers');
 
-plugin.init = function(params, callback) {
-    var router = params.router,
-        hostMiddleware = params.middleware,
-        multiparty = require.main.require('connect-multiparty')();
+const plugin = {
+	embedRegex: /\[audio\/([\w\-_.]+)\]/g,
+};
+let app;
 
-    app = params.app;
+plugin.init = async function (params) {
+	const { router, middleware } = params;
 
-    router.get('/admin/plugins/audio-embed', hostMiddleware.admin.buildHeader, controllers.renderAdminPage);
-    router.get('/api/admin/plugins/audio-embed', controllers.renderAdminPage);
-    router.post('/plugins/nodebb-plugin-audio-embed/upload', multiparty, hostMiddleware.validateFiles, hostMiddleware.applyCSRF, controllers.upload);
+	app = params.app;
 
-    mkdirp(path.join(nconf.get('upload_path'), 'audio-embed'), callback);
+	routeHelpers.setupAdminPageRoute(router, '/admin/plugins/audio-embed', controllers.renderAdminPage);
+
+	const upload = nodebb.require('./src/middleware/multer');
+
+	router.post('/plugins/nodebb-plugin-audio-embed/upload', upload.any(), middleware.validateFiles, middleware.applyCSRF, routeHelpers.tryRoute(controllers.upload));
+
+	await mkdirp(path.join(nconf.get('upload_path'), 'audio-embed'));
 };
 
-plugin.addAdminNavigation = function(header, callback) {
-    header.plugins.push({
-        route: '/plugins/audio-embed',
-        icon: 'fa-volume-up',
-        name: 'Audio Embed'
-    });
-
-    callback(null, header);
+plugin.addAdminNavigation = function (header) {
+	header.plugins.push({
+		route: '/plugins/audio-embed',
+		icon: 'fa-volume-up',
+		name: 'Audio Embed',
+	});
+	return header;
 };
 
-plugin.registerFormatting = function(payload, callback) {
-    payload.options.push({ name: 'audio-embed', className: 'fa fa-file-audio-o' });
-    callback(null, payload);
+plugin.registerFormatting = function (payload) {
+	payload.options.push({
+		name: 'audio-embed',
+		className: 'fa fa-file-audio-o',
+		title: 'Embed Audio',
+	});
+	return payload;
 };
 
-plugin.processUpload = function(payload, callback) {
-    if (payload.type.startsWith('audio/')) {
-        var id = path.basename(payload.path),
-            uploadPath = path.join(nconf.get('upload_path'), 'audio-embed', id);
+plugin.parsePost = async function (data) {
+	if (!data || !data.postData || !data.postData.content) {
+		return data;
+	}
 
-        async.waterfall([
-            async.apply(mv, payload.path, uploadPath),
-            async.apply(db.setObject, 'audio-embed:id:' + id, {
-                name: payload.name,
-                size: payload.size
-            }),
-            async.apply(db.sortedSetAdd, 'audio-embed:date', +new Date(), id)
-        ], function(err) {
-            if (err) {
-                return callback(err);
-            }
-
-            callback(null, {
-                id: id
-            });
-        });
-    } else {
-        callback(new Error('invalid-file-type'));
-    }
+	data.postData.content = await plugin.parseRaw(data.postData.content);
+	return data;
 };
 
-plugin.parsePost = function(data, callback) {
-    if (!data || !data.postData || !data.postData.content) {
-        return callback(null, data);
-    }
+plugin.parseRaw = async function (content) {
+	const matches = [...new Set(content.match(plugin.embedRegex) || [])]
+		.map(match => match.slice(7, -1));
 
-    plugin.parseRaw(data.postData.content, function(err, content) {
-        if (err) {
-            return callback(err);
-        }
+	if (!matches.length) {
+		return content;
+	}
 
-        data.postData.content = content;
-        callback(null, data);
-    });
+	const existence = await db.isSortedSetMembers('audio-embed:date', matches);
+	const ids = matches.filter((id, index) => existence[index]);
+
+	let parsedContent = content;
+	const renderedEmbeds = await Promise.all(ids.map(async id => ({
+		id,
+		html: await app.renderAsync('partials/audio-embed', {
+			id,
+			path: path.join(nconf.get('relative_path'), '/uploads/audio-embed', id),
+		}),
+	})));
+
+	for (const { id, html } of renderedEmbeds) {
+		parsedContent = parsedContent.replace(`[audio/${id}]`, html);
+	}
+
+	return parsedContent;
 };
 
-plugin.parseRaw = function(content, callback) {
-    var matches = content.match(plugin.embedRegex);
-
-    if (!matches) {
-        return callback(null, content);
-    }
-
-    // Filter out duplicates
-    matches = matches.filter(function(match, idx) {
-        return idx === matches.indexOf(match);
-    }).map(function(match) {
-        return match.slice(7, -1);
-    });
-
-    async.filter(matches, plugin.exists, function(err, ids) {
-        async.reduce(ids, content, function(content, id, next) {
-            app.render('partials/audio-embed', {
-                id: id,
-                path: path.join(nconf.get('relative_path'), '/uploads/audio-embed', id)
-            }, function(err, html) {
-                content = content.replace('[audio/' + id + ']', html);
-                next(err, content);
-            });
-        }, callback);
-    });
-};
-
-plugin.exists = function(id, callback) {
-    db.isSortedSetMember('audio-embed:date', id, callback);
+plugin.exists = async function (id) {
+	return await db.isSortedSetMember('audio-embed:date', id);
 };
 
 module.exports = plugin;
