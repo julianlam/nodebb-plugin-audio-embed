@@ -24,11 +24,6 @@ plugin.init = async function (params) {
 
 	const upload = nodebb.require('./src/middleware/multer');
 
-	// Require a logged-in user and apply the same per-IP upload rate limit as
-	// NodeBB's core upload routes. Without ensureLoggedIn this route accepts a
-	// POST from any visitor who holds a CSRF token (which /api/config hands to
-	// guests), so unauthenticated users could upload files; the privilege check
-	// in controllers.upload further restricts it to accounts allowed to upload.
 	router.post('/plugins/nodebb-plugin-audio-embed/upload', [
 		middleware.ensureLoggedIn,
 		upload.any(),
